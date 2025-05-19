@@ -29,6 +29,27 @@
     .search-input:focus {
       box-shadow: 0 0 0 3px rgba(76, 0, 255, 0.2);
     }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 50;
+      padding: 1rem;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+    @media (max-width: 768px) {
+      .mobile-menu {
+        display: block;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -38,6 +59,12 @@
         <div class="flex items-center space-x-2">
           <span class="text-xl font-semibold text-primary">Kinnisvara</span>
         </div>
+        <!-- Mobile Menu Button -->
+        <button id="mobileMenuButton" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <nav class="hidden md:flex space-x-8">
           <a href="ava.html" class="text-gray-600 hover:text-primary">Avaleht</a>
           <a href="map.html" class="text-gray-600 hover:text-primary">Kaart</a>
@@ -49,108 +76,114 @@
     </div>
   </header>
 
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="flex justify-between items-center mb-6">
+      <span class="text-xl font-semibold text-primary">Kinnisvara</span>
+      <button id="closeMobileMenu" class="p-2 rounded-lg hover:bg-gray-100">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex flex-col space-y-4">
+      <a href="ava.html" class="text-gray-600 hover:text-primary py-2">Avaleht</a>
+      <a href="map.html" class="text-gray-600 hover:text-primary py-2">Kaart</a>
+      <a href="paringud.html" class="text-gray-600 hover:text-primary py-2">Päringud</a>
+      <a href="#" class="text-gray-600 hover:text-primary py-2">Kliendid</a>
+      <a href="#" class="text-gray-600 hover:text-primary py-2">Meist</a>
+    </nav>
+  </div>
+
   <main class="max-w-7xl mx-auto px-4 py-8">
-    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-8 mb-8">
-      <h1 class="text-4xl font-bold mb-4">Aktiivsed kuulutused</h1>
-      <p class="text-lg opacity-90">Leia endale sobiv kinnisvara meie valikus!</p>
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-4 md:p-8 mb-8">
+      <h1 class="text-3xl md:text-4xl font-bold mb-4">Aktiivsed kuulutused</h1>
+      <p class="text-base md:text-lg opacity-90 mb-8">Leia endale sobiv kinnisvara meie valikus!</p>
+      
+      <!-- Search Section -->
+      <div class="bg-white rounded-xl p-4 md:p-6 shadow-lg">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="md:col-span-2">
+            <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900 placeholder-gray-500">
+          </div>
+          <div>
+            <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900">
+              <option value="">Kinnisvara tüüp</option>
+              <option value="korter">Korter</option>
+              <option value="maja">Maja</option>
+              <option value="ari">Äripind</option>
+              <option value="kinnistu">Kinnistu</option>
+            </select>
+          </div>
+          <div>
+            <select class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900">
+              <option value="">Hinna vahemik</option>
+              <option value="0-50000">0 - 50 000€</option>
+              <option value="50000-100000">50 000€ - 100 000€</option>
+              <option value="100000-200000">100 000€ - 200 000€</option>
+              <option value="200000+">200 000€+</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button class="w-full md:w-auto bg-primary text-white px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
+            Otsi
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Search Section -->
-    <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="col-span-2">
-          <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
-        </div>
-        <div>
-          <select class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
-            <option value="">Kinnisvara tüüp</option>
-            <option value="korter">Korter</option>
-            <option value="maja">Maja</option>
-            <option value="ari">Äripind</option>
-            <option value="kinnistu">Kinnistu</option>
-          </select>
-        </div>
-        <div>
-          <select class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
-            <option value="">Hinna vahemik</option>
-            <option value="0-50000">0 - 50 000€</option>
-            <option value="50000-100000">50 000€ - 100 000€</option>
-            <option value="100000-200000">100 000€ - 200 000€</option>
-            <option value="200000+">200 000€+</option>
-          </select>
-        </div>
-      </div>
-      <div class="mt-4 flex justify-end">
-        <button class="bg-primary text-white px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
-          Otsi
-        </button>
-      </div>
-    </div>
-
-    <div class="grid grid-cols-1 gap-6">
-      <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow property-card" onclick="window.location.href='index.html?property=smuuli'">
-        <div class="flex space-x-4">
-          <img src="https://via.placeholder.com/200x150.png?text=Smuuli" class="w-48 h-32 object-cover rounded" />
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="text-lg font-medium">Smuuli tn 14, Kuressaare</h3>
-              <span class="text-xl font-semibold text-primary">320 000€</span>
-            </div>
-            <p class="text-gray-600 text-sm mt-1">Korterid, 5 korrust</p>
-            <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Pindala: 4467.8 m²</span>
-              <span>Elamispind: 2297.3 m²</span>
-            </div>
+    <!-- Property Listings -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Smuuli tn 14 -->
+      <div class="property-card bg-white rounded-xl shadow-sm border overflow-hidden">
+        <img src="https://via.placeholder.com/400x300.png?text=Smuuli+tn+14" alt="Smuuli tn 14" class="w-full h-48 object-cover" />
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-2">Smuuli tn 14</h3>
+          <p class="text-gray-600 text-sm mb-4">Kuressaare</p>
+          <div class="flex justify-between items-center">
+            <span class="text-primary font-bold">320 000€</span>
+            <a href="index.html?property=smuuli" class="text-primary hover:underline">Vaata lähemalt</a>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow property-card" onclick="window.location.href='index.html?property=metskond'">
-        <div class="flex space-x-4">
-          <img src="https://via.placeholder.com/200x150.png?text=Metskond" class="w-48 h-32 object-cover rounded" />
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="text-lg font-medium">Kuressaare metskond 547, Kudjape</h3>
-              <span class="text-xl font-semibold text-primary">41 041€</span>
-            </div>
-            <p class="text-gray-600 text-sm mt-1">Kinnistu</p>
-            <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Pindala: 385.484 m²</span>
-            </div>
+      <!-- Kuressaare metskond 547 -->
+      <div class="property-card bg-white rounded-xl shadow-sm border overflow-hidden">
+        <img src="https://via.placeholder.com/400x300.png?text=Kuressaare+metskond+547" alt="Kuressaare metskond 547" class="w-full h-48 object-cover" />
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-2">Kuressaare metskond 547</h3>
+          <p class="text-gray-600 text-sm mb-4">Kudjape</p>
+          <div class="flex justify-between items-center">
+            <span class="text-primary font-bold">41 041€</span>
+            <a href="index.html?property=metskond" class="text-primary hover:underline">Vaata lähemalt</a>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow property-card" onclick="window.location.href='index.html?property=roopa'">
-        <div class="flex space-x-4">
-          <img src="https://via.placeholder.com/200x150.png?text=Roopa" class="w-48 h-32 object-cover rounded" />
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="text-lg font-medium">Roopa tn 14/1, Kuressaare</h3>
-              <span class="text-xl font-semibold text-primary">89 000€</span>
-            </div>
-            <p class="text-gray-600 text-sm mt-1">Eramaja</p>
-            <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Pindala: 61.6 m²</span>
-              <span>Elamispind: 41.9 m²</span>
-            </div>
+      <!-- Roopa tn 14/1 -->
+      <div class="property-card bg-white rounded-xl shadow-sm border overflow-hidden">
+        <img src="https://via.placeholder.com/400x300.png?text=Roopa+tn+14/1" alt="Roopa tn 14/1" class="w-full h-48 object-cover" />
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-2">Roopa tn 14/1</h3>
+          <p class="text-gray-600 text-sm mb-4">Kuressaare</p>
+          <div class="flex justify-between items-center">
+            <span class="text-primary font-bold">89 000€</span>
+            <a href="index.html?property=roopa" class="text-primary hover:underline">Vaata lähemalt</a>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow property-card" onclick="window.location.href='index.html?property=merikotka'">
-        <div class="flex space-x-4">
-          <img src="https://via.placeholder.com/200x150.png?text=Merikotka" class="w-48 h-32 object-cover rounded" />
-          <div class="flex-1">
-            <div class="flex justify-between items-start">
-              <h3 class="text-lg font-medium">Merikotka tn 1, Kuressaare</h3>
-              <span class="text-xl font-semibold text-primary">275 000€</span>
-            </div>
-            <p class="text-gray-600 text-sm mt-1">Ärihoone</p>
-            <div class="mt-3 flex items-center space-x-4 text-sm text-gray-500">
-              <span>Pindala: 3599.5 m²</span>
-              <span>Elamispind: 2130.4 m²</span>
-            </div>
+      <!-- Merikotka tn 1 -->
+      <div class="property-card bg-white rounded-xl shadow-sm border overflow-hidden">
+        <img src="https://via.placeholder.com/400x300.png?text=Merikotka+tn+1" alt="Merikotka tn 1" class="w-full h-48 object-cover" />
+        <div class="p-4">
+          <h3 class="text-lg font-semibold mb-2">Merikotka tn 1</h3>
+          <p class="text-gray-600 text-sm mb-4">Kuressaare</p>
+          <div class="flex justify-between items-center">
+            <span class="text-primary font-bold">275 000€</span>
+            <a href="index.html?property=merikotka" class="text-primary hover:underline">Vaata lähemalt</a>
           </div>
         </div>
       </div>
@@ -158,7 +191,7 @@
   </main>
 
   <footer class="bg-gray-50 border-t mt-12">
-    <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 class="text-lg font-semibold mb-4">Kinnisvara</h3>
@@ -207,5 +240,27 @@
       </div>
     </div>
   </footer>
+
+  <script>
+    // Mobile menu functionality
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.add('active');
+    });
+
+    closeMobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+        mobileMenu.classList.remove('active');
+      }
+    });
+  </script>
 </body>
 </html> 

@@ -37,8 +37,40 @@
       border-radius: 0.5rem;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       max-width: 300px;
-      max-height: calc(100vh - 380px); /* Adjusted for header and footer */
+      max-height: calc(100vh - 380px);
       overflow-y: auto;
+    }
+    @media (max-width: 768px) {
+      .property-list {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        right: 0;
+        left: 0;
+        max-width: none;
+        max-height: 50vh;
+        border-radius: 1rem 1rem 0 0;
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out;
+      }
+      .property-list.active {
+        transform: translateY(0);
+      }
+      .property-list-toggle {
+        display: block;
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1001;
+        background: white;
+        border-radius: 50%;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      }
     }
     .property-item {
       cursor: pointer;
@@ -106,6 +138,34 @@
     .search-toggle:hover {
       background: #f3f4f6;
     }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 50;
+      padding: 1rem;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      transform: translateX(0);
+    }
+    @media (max-width: 768px) {
+      .mobile-menu {
+        display: block;
+      }
+      .search-panel {
+        width: calc(100% - 40px);
+        max-width: 300px;
+      }
+      .search-toggle {
+        top: 20px;
+      }
+    }
   </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
@@ -115,6 +175,12 @@
         <div class="flex items-center space-x-2">
           <span class="text-xl font-semibold text-primary">Kinnisvara</span>
         </div>
+        <!-- Mobile Menu Button -->
+        <button id="mobileMenuButton" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
         <nav class="hidden md:flex space-x-8">
           <a href="ava.html" class="text-gray-600 hover:text-primary">Avaleht</a>
           <a href="map.html" class="text-gray-600 hover:text-primary">Kaart</a>
@@ -125,6 +191,25 @@
       </div>
     </div>
   </header>
+
+  <!-- Mobile Menu -->
+  <div id="mobileMenu" class="mobile-menu">
+    <div class="flex justify-between items-center mb-6">
+      <span class="text-xl font-semibold text-primary">Kinnisvara</span>
+      <button id="closeMobileMenu" class="p-2 rounded-lg hover:bg-gray-100">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <nav class="flex flex-col space-y-4">
+      <a href="ava.html" class="text-gray-600 hover:text-primary py-2">Avaleht</a>
+      <a href="map.html" class="text-gray-600 hover:text-primary py-2">Kaart</a>
+      <a href="paringud.html" class="text-gray-600 hover:text-primary py-2">Päringud</a>
+      <a href="#" class="text-gray-600 hover:text-primary py-2">Kliendid</a>
+      <a href="#" class="text-gray-600 hover:text-primary py-2">Meist</a>
+    </nav>
+  </div>
 
   <main class="flex-grow relative">
     <div id="map"></div>
@@ -141,15 +226,15 @@
       <div class="mb-4">
         <h2 class="font-semibold mb-2">Otsi kinnisvara</h2>
         <div class="space-y-3">
-          <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
-          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
+          <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900">
+          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900">
             <option value="">Kinnisvara tüüp</option>
             <option value="korter">Korter</option>
             <option value="maja">Maja</option>
             <option value="ari">Äripind</option>
             <option value="kinnistu">Kinnistu</option>
           </select>
-          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
+          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary text-gray-900">
             <option value="">Hinna vahemik</option>
             <option value="0-50000">0 - 50 000€</option>
             <option value="50000-100000">50 000€ - 100 000€</option>
@@ -164,13 +249,20 @@
     </div>
     
     <!-- Property List Sidebar -->
-    <div class="property-list p-4">
+    <div id="propertyList" class="property-list p-4">
       <div class="flex justify-between items-center mb-4">
         <h2 class="font-semibold">Kinnistud</h2>
         <span class="text-sm text-gray-500" id="propertyCount"></span>
       </div>
-      <div id="propertyList" class="space-y-2"></div>
+      <div id="propertyListContent" class="space-y-2"></div>
     </div>
+
+    <!-- Property List Toggle Button (Mobile) -->
+    <button id="propertyListToggle" class="property-list-toggle md:hidden">
+      <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
 
     <!-- Compare Button -->
     <button id="compareButton" class="compare-button bg-primary text-white px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
@@ -206,7 +298,7 @@
   </main>
 
   <footer class="bg-gray-50 border-t">
-    <div class="max-w-7xl mx-auto px-4 py-12">
+    <div class="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <h3 class="text-lg font-semibold mb-4">Kinnisvara</h3>
@@ -257,6 +349,41 @@
   </footer>
 
   <script>
+    // Mobile menu functionality
+    const mobileMenuButton = document.getElementById('mobileMenuButton');
+    const closeMobileMenu = document.getElementById('closeMobileMenu');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.add('active');
+    });
+
+    closeMobileMenu.addEventListener('click', () => {
+      mobileMenu.classList.remove('active');
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+        mobileMenu.classList.remove('active');
+      }
+    });
+
+    // Property list toggle functionality (mobile)
+    const propertyListToggle = document.getElementById('propertyListToggle');
+    const propertyList = document.getElementById('propertyList');
+
+    propertyListToggle.addEventListener('click', () => {
+      propertyList.classList.toggle('active');
+    });
+
+    // Close property list when clicking outside (mobile)
+    document.addEventListener('click', (e) => {
+      if (!propertyList.contains(e.target) && !propertyListToggle.contains(e.target)) {
+        propertyList.classList.remove('active');
+      }
+    });
+
     const properties = {
       smuuli: {
         name: "Smuuli tn 14",
@@ -350,7 +477,7 @@
     });
 
     // Add properties to sidebar list
-    const propertyList = document.getElementById('propertyList');
+    const propertyListContent = document.getElementById('propertyListContent');
     const propertyCount = document.getElementById('propertyCount');
     propertyCount.textContent = `${Object.keys(properties).length} kinnistut`;
 
@@ -497,7 +624,7 @@
         }
       });
 
-      propertyList.appendChild(div);
+      propertyListContent.appendChild(div);
     });
 
     // Fit map to show all markers
