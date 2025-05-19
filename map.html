@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kinnistud Kaardil</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    .bg-primary {
+      background-color: #4c00ff;
+    }
+    .text-primary {
+      color: #000000;
+    }
+    #map {
+      height: calc(100vh - 64px - 280px); /* Adjusted for header and footer */
+      width: 100%;
+    }
+    .popup-content {
+      min-width: 250px;
+    }
+    .popup-image {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .property-list {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      z-index: 1000;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      max-width: 300px;
+      max-height: calc(100vh - 380px); /* Adjusted for header and footer */
+      overflow-y: auto;
+    }
+    .property-item {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .property-item:hover {
+      background-color: #f3f4f6;
+    }
+    .comparison-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      z-index: 1001;
+      transform: translateY(100%);
+      transition: transform 0.3s ease-in-out;
+      box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .comparison-panel.active {
+      transform: translateY(0);
+    }
+    .compare-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .compare-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1002;
+      display: none;
+    }
+    .compare-button.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+  <header class="bg-white shadow-sm border-b h-16">
+    <div class="max-w-7xl mx-auto px-4 h-full">
+      <div class="flex justify-between items-center h-full">
+        <div class="flex items-center space-x-2">
+          <span class="text-xl font-semibold text-primary">Kinnisvara</span>
+        </div>
+        <nav class="hidden md:flex space-x-8">
+          <a href="ava.html" class="text-gray-600 hover:text-primary">Avaleht</a>
+          <a href="map.html" class="text-gray-600 hover:text-primary">Kaart</a>
+          <a href="#" class="text-gray-600 hover:text-primary">Päringuud</a>
+          <a href="#" class="text-gray-600 hover:text-primary">Kliendid</a>
+          <a href="#" class="text-gray-600 hover:text-primary">Meist</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow relative">
+    <div id="map"></div>
+    
+    <!-- Property List Sidebar -->
+    <div class="property-list p-4">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="font-semibold">Kinnistud</h2>
+        <span class="text-sm text-gray-500" id="propertyCount"></span>
+      </div>
+      <div id="propertyList" class="space-y-2"></div>
+    </div>
+
+    <!-- Compare Button -->
+    <button id="compareButton" class="compare-button bg-primary text-white px-6 py-3 rounded-full shadow-lg hover:opacity-90 transition-all">
+      Võrdle valitud kinnistuid (<span id="selectedCount">0</span>)
+    </button>
+
+    <!-- Comparison Panel -->
+    <div id="comparisonPanel" class="comparison-panel">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold">Kinnisvara võrdlus</h2>
+          <button id="closeComparison" class="text-gray-500 hover:text-gray-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div id="comparisonContent" class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b">
+                <th class="py-2 px-4">Omadus</th>
+                <!-- Property columns will be added dynamically -->
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Comparison rows will be added dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="bg-gray-50 border-t">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Kinnisvara</h3>
+          <p class="text-gray-600 text-sm">Teie usaldusväärne partner kinnisvara ostu-müügi tehingutes.</p>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Kiirlingid</h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li><a href="ava.html" class="hover:text-primary">Avaleht</a></li>
+            <li><a href="map.html" class="hover:text-primary">Kaart</a></li>
+            <li><a href="#" class="hover:text-primary">Päringuud</a></li>
+            <li><a href="#" class="hover:text-primary">Kliendid</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Kontakt</h3>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>Email: info@kinnisvara.ee</li>
+            <li>Tel: +372 5123 4567</li>
+            <li>Aadress: Tallinna 1, Kuressaare</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-semibold mb-4">Jälgi meid</h3>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-600 hover:text-primary">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-600 hover:text-primary">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+              </svg>
+            </a>
+            <a href="#" class="text-gray-600 hover:text-primary">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t mt-8 pt-8 text-center text-sm text-gray-600">
+        <p>&copy; 2024 Kinnisvara. Kõik õigused kaitstud.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const properties = {
+      smuuli: {
+        name: "Smuuli tn 14",
+        address: "Smuuli tn 14, Kuressaare",
+        coords: [58.2609, 22.4881],
+        img: "https://via.placeholder.com/400x300.png?text=Smuuli+tn+14",
+        price: "320 000€",
+        type: "Korterid",
+        area: "4467.8 m²",
+        details: [
+          "Korterite arv: 50",
+          "Elamispind: 2297.3 m²",
+          "Korrused: 5"
+        ]
+      },
+      metskond: {
+        name: "metskond 547 ",
+        address: "Kuressaare metskond 547, Kudjape",
+        coords: [58.2612, 22.5324],
+        img: "https://via.placeholder.com/400x300.png?text=Kuressaare+metskond+547",
+        price: "41 041€",
+        type: "Kinnistu",
+        area: "385.484 m²",
+        details: [
+          "Metsa pindala: 371.332 m²",
+          "Muu maa: 14.152 m²"
+        ]
+      },
+      roopa: {
+        name: "Roopa tn 14/1",
+        address: "Roopa tn 14/1, Kuressaare",
+        coords: [58.25629362934657, 22.504999326532747],
+        img: "https://via.placeholder.com/400x300.png?text=Roopa+tn+14/1",
+        price: "89 000€",
+        type: "Eramaja",
+        area: "61.6 m²",
+        details: [
+          "Elamispind: 41.9 m²",
+          "4-toaline"
+        ]
+      },
+      merikotka: {
+        name: "Merikotka tn 1",
+        address: "Merikotka tn 1, Kuressaare",
+        coords: [58.2469, 22.4586],
+        img: "https://via.placeholder.com/400x300.png?text=Merikotka+tn+1",
+        price: "275 000€",
+        type: "Ärihoone",
+        area: "3599.5 m²",
+        details: [
+          "Elamispind: 2130.4 m²"
+        ]
+      }
+    };
+
+    // Initialize map
+    const map = L.map('map').setView([58.2525, 22.4950], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Create markers for each property
+    const markers = {};
+    Object.entries(properties).forEach(([id, property]) => {
+      // Create marker
+      const marker = L.marker(property.coords);
+      markers[id] = marker;
+
+      // Create popup content
+      const popupContent = `
+        <div class="popup-content">
+          <img src="${property.img}" alt="${property.name}" class="popup-image" />
+          <h3 class="font-bold text-lg mb-1">${property.name}</h3>
+          <p class="text-gray-600 text-sm mb-2">${property.address}</p>
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm">${property.type}</span>
+            <span class="font-bold text-primary">${property.price}</span>
+          </div>
+          <div class="text-sm text-gray-600">
+            <p>Pindala: ${property.area}</p>
+            ${property.details.map(detail => `<p>${detail}</p>`).join('')}
+          </div>
+          <a href="index.html?property=${id}" class="block text-center bg-primary text-white py-2 px-4 rounded-full mt-4 hover:opacity-90 transition-opacity">
+            Vaata lähemalt
+          </a>
+        </div>
+      `;
+
+      // Bind popup to marker
+      marker.bindPopup(popupContent);
+    });
+
+    // Add properties to sidebar list
+    const propertyList = document.getElementById('propertyList');
+    const propertyCount = document.getElementById('propertyCount');
+    propertyCount.textContent = `${Object.keys(properties).length} kinnistut`;
+
+    // Comparison functionality
+    const selectedProperties = new Set();
+    const compareButton = document.getElementById('compareButton');
+    const comparisonPanel = document.getElementById('comparisonPanel');
+    const selectedCountSpan = document.getElementById('selectedCount');
+    const closeComparisonBtn = document.getElementById('closeComparison');
+
+    function updateCompareButton() {
+      const count = selectedProperties.size;
+      selectedCountSpan.textContent = count;
+      compareButton.classList.toggle('active', count >= 2);
+    }
+
+    function togglePropertySelection(id) {
+      if (selectedProperties.has(id)) {
+        selectedProperties.delete(id);
+      } else {
+        selectedProperties.add(id);
+      }
+      updateCompareButton();
+    }
+
+    function showComparison() {
+      const comparisonContent = document.getElementById('comparisonContent');
+      const table = comparisonContent.querySelector('table');
+      const thead = table.querySelector('thead tr');
+      const tbody = table.querySelector('tbody');
+
+      // Clear existing content
+      while (thead.children.length > 1) {
+        thead.removeChild(thead.lastChild);
+      }
+      tbody.innerHTML = '';
+
+      // Add headers for selected properties
+      selectedProperties.forEach(id => {
+        const property = properties[id];
+        const th = document.createElement('th');
+        th.className = 'py-2 px-4';
+        th.innerHTML = `
+          <div class="w-48">
+            <img src="${property.img}" alt="${property.name}" class="w-full h-32 object-cover rounded mb-2">
+            <h3 class="font-bold">${property.name}</h3>
+          </div>
+        `;
+        thead.appendChild(th);
+      });
+
+      // Add comparison rows
+      const rows = [
+        { label: 'Hind', key: 'price' },
+        { label: 'Tüüp', key: 'type' },
+        { label: 'Aadress', key: 'address' },
+        { label: 'Pindala', key: 'area' }
+      ];
+
+      // Add detail rows dynamically based on all available details
+      const allDetails = new Set();
+      selectedProperties.forEach(id => {
+        properties[id].details.forEach(detail => {
+          const label = detail.split(':')[0].trim();
+          allDetails.add(label);
+        });
+      });
+
+      allDetails.forEach(label => {
+        rows.push({
+          label,
+          key: `details.${label}`,
+          isDetail: true
+        });
+      });
+
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b';
+        
+        // Add row label
+        const th = document.createElement('th');
+        th.className = 'py-2 px-4 font-medium';
+        th.textContent = row.label;
+        tr.appendChild(th);
+
+        // Add values for each property
+        selectedProperties.forEach(id => {
+          const property = properties[id];
+          const td = document.createElement('td');
+          td.className = 'py-2 px-4';
+
+          if (row.isDetail) {
+            const detail = property.details.find(d => d.startsWith(row.label));
+            td.textContent = detail ? detail.split(':')[1].trim() : '-';
+          } else {
+            td.textContent = property[row.key] || '-';
+          }
+
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      comparisonPanel.classList.add('active');
+    }
+
+    compareButton.addEventListener('click', showComparison);
+    closeComparisonBtn.addEventListener('click', () => {
+      comparisonPanel.classList.remove('active');
+    });
+
+    Object.entries(properties).forEach(([id, property]) => {
+      const div = document.createElement('div');
+      div.className = 'property-item p-3 rounded-lg border';
+      div.innerHTML = `
+        <div class="flex items-start space-x-3">
+          <input type="checkbox" class="compare-checkbox mt-1" data-id="${id}">
+          <div class="flex-1">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="font-medium">${property.name}</h3>
+                <p class="text-sm text-gray-600">${property.type}</p>
+              </div>
+              <span class="text-primary font-semibold">${property.price}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Add checkbox event listener
+      const checkbox = div.querySelector('.compare-checkbox');
+      checkbox.addEventListener('change', () => {
+        togglePropertySelection(id);
+        div.classList.toggle('bg-blue-50', checkbox.checked);
+      });
+
+      // Add click event to fly to marker (excluding checkbox)
+      div.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('compare-checkbox')) {
+          map.flyTo(property.coords, 17);
+          markers[id].openPopup();
+        }
+      });
+
+      propertyList.appendChild(div);
+    });
+
+    // Fit map to show all markers
+    const bounds = L.latLngBounds(Object.values(properties).map(p => p.coords));
+    map.fitBounds(bounds, { padding: [50, 50] });
+
+    // Add markers to map
+    Object.values(markers).forEach(marker => marker.addTo(map));
+  </script>
+</body>
+</html> 

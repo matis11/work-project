@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kinnisvara Detailvaade</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    .bg-primary {
+      background-color: #4c00ff;
+    }
+    .text-primary {
+      color: #000000;
+    }
+    .map-container {
+      height: 400px;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .property-image {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+    .feature-icon {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+    }
+    .detail-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .back-button {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem 2rem;
+      background-color: #4c00ff;
+      color: white;
+      border-radius: 9999px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+    }
+    .back-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-sm border-b">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <span class="text-xl font-semibold text-primary">Kinnisvara</span>
+      </div>
+      <nav class="hidden md:flex space-x-8">
+        <a href="ava.html" class="text-gray-600 hover:text-primary">Tagasi otsingusse</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Left Column -->
+      <div class="space-y-6">
+        <img id="propertyImage" src="" alt="Property Image" class="property-image shadow-lg" />
+        
+        <div class="detail-card">
+          <h1 id="propertyTitle" class="text-2xl font-bold mb-2"></h1>
+          <p id="propertyAddress" class="text-gray-600 mb-4"></p>
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="flex items-center">
+              <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+              <span id="propertyArea"></span>
+            </div>
+            <div class="flex items-center">
+              <svg class="feature-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+              </svg>
+              <span id="propertyType"></span>
+            </div>
+          </div>
+          <div class="border-t pt-4">
+            <h2 class="text-xl font-semibold mb-4">Kinnistu info</h2>
+            <div id="propertyDetails" class="space-y-2 text-gray-600"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div class="space-y-6">
+        <div class="detail-card">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold" id="propertyPrice"></h2>
+            <button class="bg-primary text-white px-6 py-2 rounded-full hover:opacity-90 transition-opacity">
+              Võta ühendust
+            </button>
+          </div>
+          <div class="border-t pt-4">
+            <h3 class="text-lg font-semibold mb-3">Asukoht kaardil</h3>
+            <div id="map" class="map-container"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <a href="ava.html" class="back-button">
+    Tagasi otsingusse
+  </a>
+
+  <script>
+    const properties = {
+      smuuli: {
+        name: "Smuuli tn 14",
+        address: "Smuuli tn 14, Kuressaare",
+        coords: [58.2609, 22.4881],
+        img: "https://via.placeholder.com/800x600.png?text=Smuuli+tn+14",
+        price: "320 000€",
+        type: "Korterid",
+        area: "4467.8 m²",
+        details: [
+          "Korterite arv: 50",
+          "Elamispind: 2297.3 m²",
+          "Korrused: 5",
+          "Omandiliik: korteriomand",
+          "Dokument: 24.05.1995, ostu-müügileping seoses erastamisega"
+        ]
+      },
+      metskond: {
+        name: "Kuressaare metskond 547",
+        address: "Kuressaare metskond 547, Kudjape",
+        coords: [58.2612, 22.5324],
+        img: "https://via.placeholder.com/800x600.png?text=Kuressaare+metskond+547",
+        price: "41 041€",
+        type: "Kinnistu",
+        area: "385.484 m²",
+        details: [
+          "Metsa pindala: 371.332 m²",
+          "Muu maa pindala: 14.152 m²",
+          "Registreeritud: 27.11.2018",
+          "Viimati muudetud: 16.12.2021",
+          "Kinnistu ID: 13964550"
+        ]
+      },
+      roopa: {
+        name: "Roopa tn 14/1",
+        address: "Roopa tn 14/1, Kuressaare",
+        coords: [58.25629362934657, 22.504999326532747],
+        img: "https://via.placeholder.com/800x600.png?text=Roopa+tn+14/1",
+        price: "89 000€",
+        type: "Eramaja",
+        area: "61.6 m²",
+        details: [
+          "Elamispind: 41.9 m²",
+          "Registreeritud: 31.12.2003",
+          "Korterite jaotus: 4-toaline",
+          "Korrus: 1"
+        ]
+      },
+      merikotka: {
+        name: "Merikotka tn 1",
+        address: "Merikotka tn 1, Kuressaare",
+        coords: [58.2469, 22.4586],
+        img: "https://via.placeholder.com/800x600.png?text=Merikotka+tn+1",
+        price: "275 000€",
+        type: "Ärihoone",
+        area: "3599.5 m²",
+        details: [
+          "Elamispind: 2130.4 m²",
+          "Registreeritud: 08.02.2018",
+          "Omandiliik: Ärihoone"
+        ]
+      }
+    };
+
+    // Get property ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const propertyId = urlParams.get('property');
+    const property = properties[propertyId];
+
+    if (property) {
+      // Update page content with property details
+      document.getElementById('propertyImage').src = property.img;
+      document.getElementById('propertyTitle').textContent = property.name;
+      document.getElementById('propertyAddress').textContent = property.address;
+      document.getElementById('propertyArea').textContent = property.area;
+      document.getElementById('propertyType').textContent = property.type;
+      document.getElementById('propertyPrice').textContent = property.price;
+      
+      const detailsContainer = document.getElementById('propertyDetails');
+      property.details.forEach(detail => {
+        const p = document.createElement('p');
+        p.textContent = detail;
+        detailsContainer.appendChild(p);
+      });
+
+      // Initialize map
+      const map = L.map('map').setView(property.coords, 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      
+      // Add marker
+      L.marker(property.coords)
+        .addTo(map)
+        .bindPopup(property.name)
+        .openPopup();
+    } else {
+      window.location.href = 'ava.html';
+    }
+  </script>
+</body>
+</html>
