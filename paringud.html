@@ -55,6 +55,38 @@
       <p class="text-lg opacity-90">Leia endale sobiv kinnisvara meie valikus!</p>
     </div>
 
+    <!-- Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border p-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="col-span-2">
+          <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
+        </div>
+        <div>
+          <select class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
+            <option value="">Kinnisvara tüüp</option>
+            <option value="korter">Korter</option>
+            <option value="maja">Maja</option>
+            <option value="ari">Äripind</option>
+            <option value="kinnistu">Kinnistu</option>
+          </select>
+        </div>
+        <div>
+          <select class="w-full px-4 py-3 rounded-lg border border-gray-300 search-input focus:outline-none focus:border-primary">
+            <option value="">Hinna vahemik</option>
+            <option value="0-50000">0 - 50 000€</option>
+            <option value="50000-100000">50 000€ - 100 000€</option>
+            <option value="100000-200000">100 000€ - 200 000€</option>
+            <option value="200000+">200 000€+</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-4 flex justify-end">
+        <button class="bg-primary text-white px-8 py-3 rounded-lg hover:opacity-90 transition-opacity">
+          Otsi
+        </button>
+      </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6">
       <div class="bg-white rounded-lg shadow-sm border p-4 hover:shadow-md transition-shadow property-card" onclick="window.location.href='index.html?property=smuuli'">
         <div class="flex space-x-4">

@@ -77,6 +77,35 @@
     .compare-button.active {
       display: block;
     }
+    .search-panel {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      z-index: 1000;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    .search-panel.active {
+      transform: translateX(0);
+    }
+    .search-toggle {
+      position: absolute;
+      top: 80px;
+      left: 20px;
+      z-index: 1001;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+    .search-toggle:hover {
+      background: #f3f4f6;
+    }
   </style>
 </head>
 <body class="bg-gray-50 flex flex-col min-h-screen">
@@ -99,6 +128,40 @@
 
   <main class="flex-grow relative">
     <div id="map"></div>
+    
+    <!-- Search Toggle Button -->
+    <button id="searchToggle" class="search-toggle">
+      <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    </button>
+
+    <!-- Search Panel -->
+    <div id="searchPanel" class="search-panel p-4">
+      <div class="mb-4">
+        <h2 class="font-semibold mb-2">Otsi kinnisvara</h2>
+        <div class="space-y-3">
+          <input type="text" placeholder="Otsi aadressi või piirkonda..." class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
+          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
+            <option value="">Kinnisvara tüüp</option>
+            <option value="korter">Korter</option>
+            <option value="maja">Maja</option>
+            <option value="ari">Äripind</option>
+            <option value="kinnistu">Kinnistu</option>
+          </select>
+          <select class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-primary">
+            <option value="">Hinna vahemik</option>
+            <option value="0-50000">0 - 50 000€</option>
+            <option value="50000-100000">50 000€ - 100 000€</option>
+            <option value="100000-200000">100 000€ - 200 000€</option>
+            <option value="200000+">200 000€+</option>
+          </select>
+          <button class="w-full bg-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
+            Otsi
+          </button>
+        </div>
+      </div>
+    </div>
     
     <!-- Property List Sidebar -->
     <div class="property-list p-4">
@@ -443,6 +506,21 @@
 
     // Add markers to map
     Object.values(markers).forEach(marker => marker.addTo(map));
+
+    // Search panel functionality
+    const searchToggle = document.getElementById('searchToggle');
+    const searchPanel = document.getElementById('searchPanel');
+
+    searchToggle.addEventListener('click', () => {
+      searchPanel.classList.toggle('active');
+    });
+
+    // Close search panel when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!searchPanel.contains(e.target) && !searchToggle.contains(e.target)) {
+        searchPanel.classList.remove('active');
+      }
+    });
   </script>
 </body>
 </html> 
